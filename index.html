@@ -38,6 +38,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
 :focus-visible{outline:2px solid var(--jade);outline-offset:2px;border-radius:4px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@keyframes lispin{to{transform:rotate(360deg)}}
 #app{display:grid;grid-template-columns:250px 1fr;grid-template-rows:64px 1fr;height:100vh}
 #sidebar{grid-row:1/3;display:flex;flex-direction:column;border-inline-end:1px solid var(--line);background:var(--panel);padding:0 14px 14px;overflow:hidden}
 #brandrow{height:64px;display:flex;align-items:center;gap:10px;padding-inline-start:6px;flex:none}
@@ -279,10 +280,17 @@ label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin:
 </style>
 </head>
 <body>
+<div id="bootmsg" dir="rtl" style="position:fixed;inset:0;background:#F5F2EA;color:#22322B;display:grid;place-items:center;font-family:system-ui,'Segoe UI',sans-serif;z-index:50;text-align:center;padding:24px">
+<div>
+<div style="width:54px;height:54px;border:4px solid #BED8CB;border-top-color:#0E7A5C;border-radius:50%;margin:0 auto 18px;animation:lispin 1s linear infinite"></div>
+<b style="font-size:18px">جارٍ تحميل تطبيق لِسان…</b>
+<p style="font-size:13px;color:#5A6A61;margin-top:8px">إن بقيت هذه الرسالة أكثر من ثانيتين فالملف غير مكتمل —<br>أعد نسخ الكود كاملًا حتى آخر سطر &lt;/html&gt;</p>
+</div>
+</div>
 <div id="fatalbox" dir="rtl" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#B3261E;color:#fff;padding:16px 20px;font-family:system-ui,sans-serif;font-size:15px;line-height:1.8;box-shadow:0 4px 18px rgba(0,0,0,.35)">
 <b>تعذّر تشغيل تطبيق لِسان</b>
 <div id="fatalmsg" style="background:rgba(255,255,255,.12);border-radius:8px;padding:10px 12px;margin-top:8px;font-weight:600;word-break:break-word"></div>
-<div style="margin-top:8px;font-size:12.5px;opacity:.9">انسخ النص داخل الإطار أعلاه <b>كاملًا</b> وأرسله ليتم إصلاح السطر المسبب فورًا.</div>
+<div style="margin-top:8px;font-size:12.5px;opacity:.9">انسخ النص داخل الإطار أعلاه كاملًا وأرسله ليتم إصلاح السطر المسبب فورًا.</div>
 </div>
 <div id="app"></div>
 <div id="root"></div>
@@ -291,11 +299,12 @@ label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin:
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===== سكربت التشخيص: يعمل حتى لو فشل السكربت الرئيسي ===== */
 (function(){
  var shown=false;
  function showFatal(msg){
   shown=true;
+  var bm=document.getElementById('bootmsg');
+  if(bm)bm.style.display='none';
   var b=document.getElementById('fatalbox'),m=document.getElementById('fatalmsg');
   if(!b||!m)return;
   m.innerHTML=msg;
@@ -309,16 +318,15 @@ label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin:
  window.addEventListener('load',function(){
   setTimeout(function(){
    if(!window.__LISAN_BOOTED&&!shown){
-    showFatal('السكربت الرئيسي لم يُنفَّذ إطلاقًا. الحلول:<br>1) تأكد أنك نسخت الكود <b>كاملًا</b> — آخر سطر في الملف يجب أن يكون <b>&lt;/html&gt;</b>.<br>2) احفظ الملف بترميز <b>UTF-8</b>.<br>3) افتحه في متصفح حديث (Chrome / Edge / Firefox).');
+    showFatal('السكربت الرئيسي لم يُنفَّذ — غالبًا الكود المقصوص عند اللصق.<br>أعد نسخ الكود كاملًا حتى آخر سطر &lt;/html&gt;');
    }
-  },1200);
+  },1500);
  });
 })();
 </script>
 
 <script>
 "use strict";
-/* لِسان · LISAN — ES2015 فقط لأوسع توافق */
 var $=function(s){return document.querySelector(s)};
 var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
@@ -334,7 +342,6 @@ var toastT=null;
 function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2600)}
 function flashXP(){var d=document.createElement('div');d.className='xpflash';d.textContent='+XP';document.body.appendChild(d);setTimeout(function(){d.remove()},1250)}
 
-/* ===== طبقة تخزين آمنة: تعمل حتى لو كان localStorage محجوبًا (معاينات معزولة) ===== */
 var __MEM={};
 function lsGet(k){try{return window.localStorage.getItem(k)}catch(e){return(__MEM[k]===undefined)?null:__MEM[k]}}
 function lsSet(k,v){try{window.localStorage.setItem(k,v)}catch(e){__MEM[k]=v}}
@@ -349,7 +356,6 @@ type:'<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"
 edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
 mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>',
 chart:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
-user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
 search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
 bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
 flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
@@ -357,7 +363,6 @@ star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.8
 trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>',
 sliders:'<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
 play:'<polygon points="6 3 20 12 6 21" fill="currentColor" stroke="none"/>',
-pause:'<rect x="5" y="4" width="5" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="5" height="16" rx="1" fill="currentColor" stroke="none"/>',
 vol:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9.2 9.2 0 0 1 0 13"/>',
 check:'<polyline points="20 6 9 17 4 12"/>',
 x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
@@ -1078,7 +1083,7 @@ a1:[
 ],
 a2:[
 {q:"Look! The baby ___ .",o:["is sleeping","sleeps","slept","sleep"],a:0,tag:"grammar"},
-{q:"Yesterday I ___ my friend.",o:["visited","visit","am investing","will visit"],a:0,tag:"grammar"},
+{q:"Yesterday I ___ my friend.",o:["visited","visit","am visiting","will visit"],a:0,tag:"grammar"},
 {q:"أي جملة صحيحة؟",o:["Did you see him?","Did you saw him?","Did you seen him?","Do you saw him?"],a:0,tag:"grammar"},
 {q:"Cairo is ___ than Alexandria.",o:["bigger","more big","biggest","more bigger"],a:0,tag:"grammar"},
 {q:"I think it ___ rain today.",o:["will","wills","is going to rain will","going"],a:0,tag:"grammar"},
@@ -2440,7 +2445,6 @@ document.addEventListener("keydown",function(e){
 window.addEventListener("hashchange",function(){if(!$("#playerhost").innerHTML)render()});
 setInterval(function(){if(AUTHED()&&document.visibilityState==="visible"){var a=act();if(a){a.min=(a.min||0)+1;STORE.save()}}},60000);
 
-/* ====== الإقلاع (داخل حماية أخطاء محسّنة) ====== */
 (function init(){
  try{
   STORE.load();
@@ -2449,8 +2453,12 @@ setInterval(function(){if(AUTHED()&&document.visibilityState==="visible"){var a=
   document.documentElement.dataset.theme=lsGet("lisan_theme")||"light";
   render();
   window.__LISAN_BOOTED=true;
+  var bm=document.getElementById('bootmsg');
+  if(bm)bm.style.display='none';
   if(!lsAvail())toast(T("noStore"));
  }catch(e){
+  var bm2=document.getElementById('bootmsg');
+  if(bm2)bm2.style.display='none';
   var nm=(e&&e.name)||"Error";
   var msg=(e&&e.message)||String(e);
   if(window.__showFatal)window.__showFatal(nm+": "+msg);
